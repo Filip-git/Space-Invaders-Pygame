@@ -7,7 +7,7 @@ pygame.font.init()
 WIDTH = 800
 HEIGHT = 750
 PROZOR = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Skriptni jezici - SPACE INVADERS")
+pygame.display.set_caption("SPACE INVADERS")
 
 
 # ucitavanje slika
@@ -21,8 +21,7 @@ ZELENI_LASER = pygame.image.load(os.path.join("slike", "zeleni_laser.png"))
 PLAVI_LASER = pygame.image.load(os.path.join("slike", "plavi_laser.png"))
 RAKETA = pygame.image.load(os.path.join("slike", "raketa.png"))
 
-POZADINA = pygame.transform.scale(
-    pygame.image.load(os.path.join("slike", "pozadina.jpg")), (WIDTH, HEIGHT)
+POZADINA = pygame.transform.scale(pygame.image.load(os.path.join("slike", "pozadina.jpg")), (WIDTH, HEIGHT)
 )
 
 
@@ -263,6 +262,5 @@ def main_menu():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 main()
     pygame.quit()
-
 
 main_menu()
