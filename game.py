@@ -2,27 +2,33 @@ import pygame
 import random
 import time
 import os
+from pygame import mixer  #import za zvukove
+pygame.mixer.init()   #import za zvukove
 pygame.font.init()
 
 WIDTH = 800
 HEIGHT = 750
-PROZOR = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("SPACE INVADERS")
+PROZOR = pygame.display.set_mode((WIDTH, HEIGHT)) #prozor igrice/programa
+pygame.display.set_caption("SPACE INVADERS") #naslov igrice/programa
 
 
-# ucitavanje slika
+# ucitavanje slika aviona
 CRVENI = pygame.image.load(os.path.join("slike", "crveni.png"))
 ZELENI = pygame.image.load(os.path.join("slike", "zeleni.png"))
 PLAVI = pygame.image.load(os.path.join("slike", "plavi.png"))
 IGRAC = pygame.image.load(os.path.join("slike", "igrac.png"))
 
+# ucitavanje slika lasera
 CRVENI_LASER = pygame.image.load(os.path.join("slike", "crveni_laser.png"))
 ZELENI_LASER = pygame.image.load(os.path.join("slike", "zeleni_laser.png"))
 PLAVI_LASER = pygame.image.load(os.path.join("slike", "plavi_laser.png"))
 RAKETA = pygame.image.load(os.path.join("slike", "raketa.png"))
 
-POZADINA = pygame.transform.scale(pygame.image.load(os.path.join("slike", "pozadina.jpg")), (WIDTH, HEIGHT)
-)
+
+POZADINA = pygame.transform.scale(pygame.image.load(os.path.join("slike", "pozadina.jpg")), (WIDTH, HEIGHT))  #slika pozadine
+pozadinski_zvuk = pygame.mixer.music.load ("pozadinski.wav")  #pozadinska muzika
+pygame.mixer.music.play(-1)  #pozadinska muzika na loop 
+
 
 
 class Laser:
@@ -46,7 +52,7 @@ class Laser:
 
 
 class Brod:
-    COOLDOWN = 20
+    COOLDOWN = 40
 
     def __init__(self, x, y, hp=100):
         self.x = x
@@ -69,7 +75,10 @@ class Brod:
             if laser.off_screen(HEIGHT):                
                 self.laseri.remove(laser) # ako izade iz granica igrice brise se laser
             elif laser.sudar(obj):  # ako pogodi laser u objekt(igraca)
-                obj.hp -= 10  # uništi enemy
+                obj.hp -= 10  #smanji hp igracu za 10hp
+                pogoden = mixer.Sound('pogoden.wav')  #inicijalizacija zvuka pogotka lasera
+                pogoden.set_volume(0.055) #podešavanje glasnoće zvuka pogotka lasera
+                pogoden.play() #puštanje zvuka
                 self.laseri.remove(laser)  # obrisi laser
     
     def cooldown(self):
@@ -109,6 +118,9 @@ class Player(Brod):
                 for obj in objs:
                     if laser.sudar(obj):  # ako pogodi laser u objekt(igraca)
                         objs.remove(obj)  # uništi enemy
+                        pogodak = mixer.Sound('pogodak.wav')  #inicijalizacija zvuka pogotka lasera
+                        pogodak.set_volume(0.05) #podešavanje glasnoće zvuka pogotka lasera
+                        pogodak.play() #puštanje zvuka
                         if laser in self.laseri:
                             self.laseri.remove(laser)  # obrisi laser
 
@@ -184,6 +196,8 @@ def main():
         player.draw(PROZOR)
 
         if gameover:
+            kraj = mixer.Sound('kraj.wav')
+            kraj.play()
             gameover_label = gameover_font.render("Izgubili ste!", 1, (255, 255, 255))
             PROZOR.blit(gameover_label, (WIDTH / 2 - gameover_label.get_width() / 2, 350))
         pygame.display.update()
@@ -223,9 +237,12 @@ def main():
             player.x += player_vel
         if keys[pygame.K_w] and player.y - player_vel > 0:  # gore
             player.y -= player_vel
-        if keys[pygame.K_s] and player.y + player_vel + player.get_height() + 20 < HEIGHT:  # dole , ovih 20 znači za hpbar da ne može ići ispod gamescreena 
+        if keys[pygame.K_s] and player.y + player_vel + player.get_height() + 20 < HEIGHT:  # dole , a ovih 20 znači za hpbar da ne može ići ispod gamescreena 
             player.y += player_vel 
         if keys[pygame.K_SPACE]:
+            laser_zvuk = mixer.Sound('laser.wav')  #inicijalizacija zvuka ispaljivanja lasera
+            laser_zvuk.set_volume(0.04) #podešavanje glasnoće zvuka ispaljivanja lasera
+            laser_zvuk.play() #puštanje zvuka
             player.shoot()
 
         for enemy in enemies[:]:
@@ -233,18 +250,20 @@ def main():
             enemy.move_laseri(laser_vel, player)
 
             if random.randrange(0, 2 * 60) == 1:  # ucestalost pucanja protivnika
-                enemy.shoot()
+                enemy.shoot() #pucanje protivnika              
 
             if collide(enemy, player):  # ako se sudare player i enemy
+                sudar = mixer.Sound('sudar.wav')  #inicijalizacija zvuka sudara igrača i protivnika
+                sudar.set_volume(0.05) #podešavanje glasnoće zvuka sudara igrača i protivnika
+                sudar.play() #puštanje zvuka
                 player.hp -= 10  # oduzmi playeru 10hp
                 enemies.remove(enemy)  # unisti enemy
-
+                
             elif enemy.y + enemy.get_height() > HEIGHT:
                 zivoti -= 1
                 enemies.remove(enemy)
 
-        # provjera je li udario laser u objekt
-        player.move_laseri(-laser_vel, enemies)
+        player.move_laseri(-laser_vel, enemies)   # provjera je li udario laser u objekt
 
 
 def main_menu():
